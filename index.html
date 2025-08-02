@@ -1,13 +1,47 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Mario Adventure</title>
+    <link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="gameUI">
+            <div id="score">Score: 0</div>
+            <div id="lives">Lives: 3</div>
+            <div id="level">Level: 1</div>
+            <div id="coins">Coins: 0</div>
+        </div>
+        <canvas id="gameCanvas" width="1024" height="576"></canvas>
+        <div id="gameMenu" class="screen">
+            <h1>Super Mario Adventure</h1>
+            <button id="startButton">Start Game</button>
+            <div class="instructions">
+                <p>Use ARROW KEYS to move</p>
+                <p>SPACEBAR to jump</p>
+                <p>Collect coins and defeat enemies!</p>
+            </div>
+        </div>
+        <div id="gameOver" class="screen hidden">
+            <h1>Game Over</h1>
+            <p id="finalScore">Final Score: 0</p>
+            <button id="restartButton">Play Again</button>
+        </div>
+        <div id="levelComplete" class="screen hidden">
+            <h1>Level Complete!</h1>
+            <p id="levelScore">Score: 0</p>
+            <button id="nextLevelButton">Next Level</button>
+        </div>
+    </div>
+    <script src="./src/utils.js"></script>
+    <script src="./src/particles.js"></script>
+    <script src="./src/player.js"></script>
+    <script src="./src/enemies.js"></script>
+    <script src="./src/collectibles.js"></script>
+    <script src="./src/level.js"></script>
+    <script src="./src/game.js"></script>
+    <script src="./src/main.js"></script>
+</body>
 </html>

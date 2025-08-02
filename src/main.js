@@ -1,24 +1,29 @@
-import './style.css'
-import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.js'
-
-document.querySelector('#app').innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Vite!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite logo to learn more
-    </p>
-  </div>
-`
-
-setupCounter(document.querySelector('#counter'))
+// Main entry point and game initialization
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize the game
+    game = new Game();
+    
+    // Start the game loop
+    game.run();
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        // Could implement canvas resizing here if needed
+    });
+    
+    // Prevent context menu on right click
+    document.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+    });
+    
+    // Prevent default behavior for arrow keys and space
+    document.addEventListener('keydown', (e) => {
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+            e.preventDefault();
+        }
+    });
+    
+    console.log('🎮 Super Mario Adventure Game Initialized!');
+    console.log('🕹️ Use ARROW KEYS to move and SPACEBAR to jump');
+    console.log('🪙 Collect coins and defeat enemies for points!');
+});
