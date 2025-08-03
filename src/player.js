@@ -20,6 +20,8 @@ class Player {
         this.lives = 3;
         this.big = false;
         this.powerUpTimer = 0;
+        this.firePower = false;
+        this.firePowerTimer = 0;
     }
 
     update() {
@@ -28,6 +30,7 @@ class Player {
         this.updateAnimation();
         this.updateInvulnerability();
         this.updatePowerUp();
+        this.updateFirePower();
     }
 
     handleInput() {
@@ -49,6 +52,17 @@ class Player {
             SoundManager.play('jump');
             game.particleSystem.createJumpEffect(this.x + this.width / 2, this.y + this.height);
         }
+        
+        // Fire shooting (if player has fire power)
+        if (inputManager.isPressed('KeyX') && this.firePower) {
+            this.shootFireball();
+        }
+    }
+
+    shootFireball() {
+        // Add fireball shooting logic here
+        console.log('🔥 Fireball shot!');
+        SoundManager.play('fireball');
     }
 
     updatePhysics() {
@@ -96,7 +110,18 @@ class Player {
         }
     }
 
+    updateFirePower() {
+        if (this.firePower && this.firePowerTimer > 0) {
+            this.firePowerTimer--;
+            if (this.firePowerTimer <= 0) {
+                this.firePower = false;
+            }
+        }
+    }
+
     handlePlatformCollision(platform) {
+        platform.playerOn = false; // Reset platform interaction
+        
         const playerBottom = this.y + this.height;
         const playerTop = this.y;
         const playerLeft = this.x;
@@ -122,6 +147,8 @@ class Player {
                 this.y = platformTop - this.height;
                 this.vy = 0;
                 this.onGround = true;
+                platform.playerOn = true;
+                return true; // Player is on this platform
             } else if (minOverlap === overlapBottom && this.vy < 0) {
                 // Hitting from below
                 this.y = platformBottom;
@@ -136,6 +163,7 @@ class Player {
                 this.vx = 0;
             }
         }
+        return false;
     }
 
     takeDamage() {
@@ -169,6 +197,13 @@ class Player {
         }
     }
 
+    gainFirePower() {
+        this.firePower = true;
+        this.firePowerTimer = 1800; // 30 seconds
+        SoundManager.play('powerUp');
+        game.particleSystem.createPowerUpEffect(this.x + this.width / 2, this.y + this.height / 2);
+    }
+
     shrink() {
         if (this.big) {
             this.big = false;
@@ -186,7 +221,11 @@ class Player {
         }
 
         // Player body
-        ctx.fillStyle = this.big ? '#FF6B6B' : '#4ECDC4';
+        let bodyColor = '#4ECDC4';
+        if (this.big) bodyColor = '#FF6B6B';
+        if (this.firePower) bodyColor = '#FF4500';
+        
+        ctx.fillStyle = bodyColor;
         ctx.fillRect(this.x, this.y, this.width, this.height);
 
         // Simple face
@@ -238,5 +277,6 @@ class Player {
         this.invulnerable = false;
         this.invulnerabilityTimer = 0;
         this.shrink();
+        this.firePower = false;
     }
 }

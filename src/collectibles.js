@@ -63,6 +63,15 @@ class Collectible {
                 player.invulnerabilityTimer = 600; // 10 seconds
                 game.score += 1000;
                 break;
+            case 'fireflower':
+                player.gainFirePower();
+                game.score += 1000;
+                break;
+            case '1up':
+                player.lives++;
+                game.score += 2000;
+                SoundManager.play('1up');
+                break;
         }
     }
 
@@ -80,6 +89,12 @@ class Collectible {
                 break;
             case 'star':
                 this.drawStar(ctx);
+                break;
+            case 'fireflower':
+                this.drawFireFlower(ctx);
+                break;
+            case '1up':
+                this.draw1Up(ctx);
                 break;
         }
 
@@ -156,6 +171,52 @@ class Collectible {
         }
         ctx.closePath();
         ctx.fill();
+    }
+
+    drawFireFlower(ctx) {
+        const centerX = this.x + this.width / 2;
+        const centerY = this.y + this.height / 2;
+        
+        // Flower stem
+        ctx.fillStyle = '#228B22';
+        ctx.fillRect(centerX - 2, centerY, 4, 8);
+        
+        // Flower petals
+        ctx.fillStyle = '#FF4500';
+        for (let i = 0; i < 4; i++) {
+            const angle = (i * Math.PI) / 2;
+            const x = centerX + Math.cos(angle) * 6;
+            const y = centerY + Math.sin(angle) * 6;
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Flower center
+        ctx.fillStyle = '#FFD700';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    draw1Up(ctx) {
+        // Green mushroom
+        ctx.fillStyle = '#00FF00';
+        ctx.fillRect(this.x, this.y, this.width, 12);
+        
+        // White spots
+        ctx.fillStyle = '#FFF';
+        ctx.fillRect(this.x + 4, this.y + 2, 4, 4);
+        ctx.fillRect(this.x + 12, this.y + 2, 4, 4);
+        
+        // Stem
+        ctx.fillStyle = '#FFFACD';
+        ctx.fillRect(this.x + 6, this.y + 12, 8, 8);
+        
+        // "1UP" text
+        ctx.fillStyle = '#FFF';
+        ctx.font = '8px monospace';
+        ctx.fillText('1UP', this.x + 2, this.y - 2);
     }
 }
 

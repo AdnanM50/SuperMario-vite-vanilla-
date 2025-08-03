@@ -7,7 +7,7 @@ class Game {
         this.score = 0;
         this.coins = 0;
         this.currentLevel = 1;
-        this.maxLevel = 3;
+        this.maxLevel = 8; // Now we have 8 designed levels plus infinite random ones
         
         // Game objects
         this.player = new Player(100, 400);
@@ -81,6 +81,47 @@ class Game {
         this.state = 'playing';
         this.hideAllScreens();
         this.updateUI();
+        
+        // Show level transition message
+        this.showLevelTransition();
+    }
+
+    showLevelTransition() {
+        // Create a temporary overlay showing the new level
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 10px;
+            font-size: 24px; font-weight: bold; z-index: 300; text-align: center;
+        `;
+        overlay.innerHTML = `
+            <h2>Level ${this.currentLevel}</h2>
+            <p>${this.getLevelDescription()}</p>
+        `;
+        document.getElementById('gameContainer').appendChild(overlay);
+        
+        setTimeout(() => {
+            overlay.remove();
+        }, 2000);
+    }
+
+    getLevelDescription() {
+        const descriptions = {
+            1: "Welcome to the Adventure!",
+            2: "The Journey Continues",
+            3: "Expert Challenges Await",
+            4: "Underground Depths",
+            5: "Castle of Challenges",
+            6: "Sky High Adventure",
+            7: "Desert Expedition",
+            8: "Frozen Wasteland",
+        };
+        
+        if (this.currentLevel <= 8) {
+            return descriptions[this.currentLevel];
+        } else {
+            return `Endless Challenge ${this.currentLevel - 8}`;
+        }
     }
 
     pauseGame() {
@@ -89,15 +130,26 @@ class Game {
 
     gameOver() {
         this.state = 'gameOver';
-        document.getElementById('finalScore').textContent = `Final Score: ${this.score}`;
+        const highScore = localStorage.getItem('marioHighScore') || 0;
+        document.getElementById('finalScore').innerHTML = `Final Score: ${this.score}<br>High Score: ${Math.max(this.score, highScore)}`;
         document.getElementById('gameOver').classList.remove('hidden');
         SoundManager.play('death');
+        
+        // Save high score
+        if (this.score > highScore) {
+            localStorage.setItem('marioHighScore', this.score);
+        }
     }
 
     levelComplete() {
         this.state = 'levelComplete';
-        this.score += this.player.lives * 1000; // Bonus for remaining lives
-        document.getElementById('levelScore').textContent = `Score: ${this.score}`;
+        const levelBonus = this.player.lives * 1000 + this.currentLevel * 500;
+        this.score += levelBonus;
+        document.getElementById('levelScore').innerHTML = `
+            Level ${this.currentLevel} Complete!<br>
+            Level Bonus: ${levelBonus}<br>
+            Total Score: ${this.score}
+        `;
         document.getElementById('levelComplete').classList.remove('hidden');
         SoundManager.play('levelComplete');
     }
@@ -112,6 +164,7 @@ class Game {
         if (this.state !== 'playing') return;
 
         // Update game objects
+        this.level.update(); // Update level (moving platforms, etc.)
         this.player.update();
         this.enemyManager.update();
         this.collectibleManager.update();
@@ -125,19 +178,45 @@ class Game {
 
         // Check win/lose conditions
         this.checkGameConditions();
+        
+        // Apply level-specific effects
+        this.applyLevelEffects();
 
         // Update UI
         this.updateUI();
     }
 
+    applyLevelEffects() {
+        // Wind effect for sky levels
+        if (this.level.windForce && !this.player.onGround) {
+            this.player.vx += this.level.windForce;
+        }
+        
+        // Slippery surfaces for ice levels
+        if (this.level.slippery && this.player.onGround) {
+            this.player.vx *= 0.95; // Less friction
+        }
+        
+        // Heat damage in volcano levels (future feature)
+        if (this.level.theme === 'volcano' && Math.random() > 0.998) {
+            // Occasional heat damage
+        }
+    }
+
     handleCollisions() {
         // Player-Platform collisions
         this.level.getPlatforms().forEach(platform => {
-            this.player.handlePlatformCollision(platform);
+            if (platform.visible !== false) {
+                const wasOnPlatform = this.player.handlePlatformCollision(platform);
+                if (wasOnPlatform && platform.disappearing) {
+                    platform.playerOn = true;
+                }
+            }
         });
 
         // Enemy-Platform collisions
-        this.enemyManager.handlePlatformCollisions(this.level.getPlatforms());
+        const visiblePlatforms = this.level.getPlatforms().filter(p => p.visible !== false);
+        this.enemyManager.handlePlatformCollisions(visiblePlatforms);
 
         // Player-Enemy collisions
         if (this.enemyManager.checkPlayerCollisions(this.player)) {
@@ -187,9 +266,14 @@ class Game {
             this.levelComplete();
         }
 
-        // Add score for surviving
-        if (Math.floor(Date.now() / 1000) % 10 === 0) {
+        // Add score for surviving (less frequent for balance)
+        if (Math.floor(Date.now() / 1000) % 15 === 0) {
             this.score += 1;
+        }
+        
+        // Bonus score for higher levels
+        if (Math.floor(Date.now() / 1000) % 20 === 0 && this.currentLevel > 5) {
+            this.score += this.currentLevel;
         }
     }
 

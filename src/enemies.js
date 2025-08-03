@@ -5,7 +5,7 @@ class Enemy {
         this.y = y;
         this.width = 24;
         this.height = 24;
-        this.vx = -1;
+        this.vx = this.getInitialSpeed(type);
         this.vy = 0;
         this.gravity = 0.5;
         this.onGround = false;
@@ -14,25 +14,50 @@ class Enemy {
         this.animFrame = 0;
         this.animTimer = 0;
         this.direction = -1;
+        this.flying = (type === 'paratroopa');
+        this.flyHeight = y;
+        this.flyOffset = 0;
+    }
+
+    getInitialSpeed(type) {
+        switch(type) {
+            case 'goomba': return -1;
+            case 'koopa': return -0.8;
+            case 'spiny': return -1.2;
+            case 'paratroopa': return -0.6;
+            default: return -1;
+        }
     }
 
     update() {
         if (!this.alive) return;
 
+        if (this.flying) {
+            this.updateFlying();
+        }
+        
         this.updatePhysics();
         this.updateAnimation();
         this.checkWorldBounds();
     }
 
+    updateFlying() {
+        this.flyOffset += 0.05;
+        this.y = this.flyHeight + Math.sin(this.flyOffset) * 30;
+        this.vy = 0; // Flying enemies don't fall
+    }
+
     updatePhysics() {
         // Apply gravity
-        if (!this.onGround) {
+        if (!this.onGround && !this.flying) {
             this.vy += this.gravity;
         }
 
         // Update position
         this.x += this.vx;
-        this.y += this.vy;
+        if (!this.flying) {
+            this.y += this.vy;
+        }
 
         // Reset ground state
         this.onGround = false;
@@ -55,6 +80,9 @@ class Enemy {
 
     handlePlatformCollision(platform) {
         if (!Utils.rectCollision(this, platform)) return;
+
+        // Flying enemies don't collide with platforms
+        if (this.flying) return;
 
         const enemyBottom = this.y + this.height;
         const enemyTop = this.y;
@@ -128,6 +156,10 @@ class Enemy {
             case 'koopa':
                 this.drawKoopa(ctx);
                 break;
+            case 'spiny':
+            case 'paratroopa':
+                this.drawSpiny(ctx);
+                break;
         }
 
         ctx.restore();
@@ -195,6 +227,39 @@ class Enemy {
         } else {
             ctx.fillRect(this.x + 4, this.y + this.height - 4, 4, 4);
             ctx.fillRect(this.x + 16, this.y + this.height - 4, 4, 4);
+        }
+    }
+
+    drawSpiny(ctx) {
+        // Spiny body (similar to goomba but with spikes)
+        ctx.fillStyle = this.type === 'paratroopa' ? '#FF69B4' : '#8B0000';
+        ctx.fillRect(this.x, this.y + 8, this.width, this.height - 8);
+
+        // Head
+        ctx.fillStyle = this.type === 'paratroopa' ? '#FF1493' : '#A00000';
+        ctx.fillRect(this.x + 2, this.y, this.width - 4, 16);
+
+        // Eyes
+        ctx.fillStyle = '#FFF';
+        ctx.fillRect(this.x + 6, this.y + 4, 4, 4);
+        ctx.fillRect(this.x + 14, this.y + 4, 4, 4);
+        
+        ctx.fillStyle = '#000';
+        ctx.fillRect(this.x + 7, this.y + 5, 2, 2);
+        ctx.fillRect(this.x + 15, this.y + 5, 2, 2);
+
+        // Spikes
+        ctx.fillStyle = '#FFF';
+        for (let i = 0; i < 3; i++) {
+            const spikeX = this.x + 4 + i * 6;
+            ctx.fillRect(spikeX, this.y - 2, 4, 6);
+        }
+        
+        // Wings for paratroopa
+        if (this.type === 'paratroopa') {
+            ctx.fillStyle = '#FFE4E1';
+            ctx.fillRect(this.x - 4, this.y + 6, 8, 4);
+            ctx.fillRect(this.x + this.width - 4, this.y + 6, 8, 4);
         }
     }
 }

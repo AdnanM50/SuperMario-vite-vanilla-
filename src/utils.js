@@ -64,6 +64,12 @@ class SoundManager {
             case 'levelComplete':
                 console.log('🔊 Level complete');
                 break;
+            case 'fireball':
+                console.log('🔊 Fireball');
+                break;
+            case '1up':
+                console.log('🔊 1UP!');
+                break;
         }
     }
 }
