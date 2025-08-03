@@ -99,3 +99,6 @@ class ParticleSystem {
         this.particles = [];
     }
 }
+
+// Make ParticleSystem globally available
+window.ParticleSystem = ParticleSystem;
